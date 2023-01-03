@@ -56,7 +56,7 @@ def get_explanation(inn_model, init, contrastive, b1, b2, cls, smooth_ks, box, s
     dt = t2-t1
 
     lrp_out = lrp_out.scatter(-1)
-    # print(f'Explain cls {names[cls]} in {dt * 1E03} ms')
+    print(f'Explain cls {names[cls]} in {dt * 1E03} ms')
     
     lrp_out =  torch.nn.functional.avg_pool2d(lrp_out.cpu(),
                                               kernel_size=smooth_ks,
@@ -97,7 +97,7 @@ def get_explanation(inn_model, init, contrastive, b1, b2, cls, smooth_ks, box, s
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         source=ROOT / 'data/images',  # file/dir/URL/glob, 0 for webcam
-        imgsz=416,  # inference size (pixels)
+        imgsz=640,  # inference size (pixels)
         conf_thres=0.25,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
         max_det=1000,  # maximum detections per image
@@ -207,16 +207,10 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         nms_pred = non_max_suppression(x, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
         t4 = time_sync()
         dt[2] += t4 - t3
-        print(explain_class)
-        print(names)
-        print((type(names)))
 
-        assert explain_class in names.values() or explain_class is None, f'Explainable classes are: {names}'
+        assert explain_class in names or explain_class is None, f'Explainable classes are: {names}'
         if explain_class is not None :
-            key_list = list(names.keys())
-            val_list = list(names.values())
-            position = val_list.index(explain_class)
-            rel_for_class = names[position]
+            rel_for_class = names.index(explain_class)
         else :
             rel_for_class = None
         
@@ -344,7 +338,7 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default=ROOT / 'data/images', help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[416], help='inference size h,w')
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
